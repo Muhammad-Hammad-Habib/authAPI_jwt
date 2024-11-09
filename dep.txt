@@ -1,0 +1,9 @@
+Nodemon
+Express
+mongodb
+mongoose
+dotenv
+jsonwebtoken
+bcrypt
+nodemailer
+cros
