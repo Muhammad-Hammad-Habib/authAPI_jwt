@@ -14,7 +14,7 @@ connect_db()
 app.use(express.json())
 
 // User Routing
-app.use('/', user_route);
+app.use('/user/api', user_route);
 
 app.listen(PORT, () => {
     console.log(`Server is running http://localhost:${PORT}`);

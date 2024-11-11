@@ -8,6 +8,7 @@ class user_route_ctrl {
         resp.send("hello");
     }
 
+    // Created users with hashed password and validation for email already exist.
     static add_user = async (req, resp) => {
         try {
             const { user_name, user_password, user_email } = req.body;
