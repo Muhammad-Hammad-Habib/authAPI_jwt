@@ -10,6 +10,9 @@ import user_route from "./routes/user_route.js";
 //connect with DATABASE
 connect_db()
 
+// JSON for postAPI
+app.use(express.json())
+
 // User Routing
 app.use('/', user_route);
 
