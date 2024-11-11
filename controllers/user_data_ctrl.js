@@ -9,7 +9,7 @@ class user_route_ctrl {
     }
 
     // Created users with hashed password and validation for email already exist.
-    static add_user = async (req, resp) => {
+    static user_register = async (req, resp) => {
         try {
             const { user_name, user_password, user_email } = req.body;
             const record_exist = await userModel.findOne({
@@ -42,5 +42,11 @@ class user_route_ctrl {
             console.log(`Add user function error ${error}`)
         }
     }
+
+    // validate and login
+    static user_login = async (req, resp) => {
+        resp.send("hello")
+    }
 }
+
 export default user_route_ctrl;
