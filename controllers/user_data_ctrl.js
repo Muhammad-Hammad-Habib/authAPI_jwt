@@ -6,8 +6,8 @@ import jwt from "jsonwebtoken"
 
 
 class user_route_ctrl {
-    static check = async (req, resp) => {
-        resp.send("hello");
+    static get_loggedIn_user_data = async (req, resp) => {
+        resp.send(req.user_record);
     }
 
     // Created users with hashed password and validation for email already exist.
@@ -26,7 +26,7 @@ class user_route_ctrl {
                 })
                 const result = await user_data.save()
                 // Generate JWT Token
-                const token = jwt.sign({ userID: result.user_email }, process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
+                const token = jwt.sign({ userID: result._id }, process.env.JWT_SECRET_KEY, { expiresIn: "5d" })
                 resp.send({
                     status: "1",
                     token: token,
@@ -41,9 +41,8 @@ class user_route_ctrl {
         } catch (error) {
             resp.send({
                 status: "0",
-                message: `Error in Catch ${error}`
+                message: `Add user function error ${error}`
             })
-            console.log(`Add user function error ${error}`)
         }
     }
 
@@ -59,7 +58,7 @@ class user_route_ctrl {
                     const check_pass = await bcrypt.compare(user_password, record_exist.user_password)
                     if (user_email == record_exist.user_email && check_pass) {
                         // Generate JWT Token
-                        const token = jwt.sign({ userID: record_exist.user_email }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
+                        const token = jwt.sign({ userID: record_exist._id }, process.env.JWT_SECRET_KEY, { expiresIn: '5d' })
                         resp.send({
                             status: "1",
                             token: token,
@@ -83,10 +82,67 @@ class user_route_ctrl {
                     message: `Email or password is empty`
                 })
             }
-
-            // resp.send(req.body)
         } catch (error) {
-            console.log(`User Login Error ${error}`)
+            resp.send({
+                status: "0",
+                message: `User Login Error ${error}`
+            })
+        }
+    }
+
+    // Change your password.
+    static change_password = async (req, resp) => {
+        try {
+            const { user_password, confirm_password } = req.body;
+            if ((user_password.trim() != "" && confirm_password.trim() != "")) {
+                if ((user_password === confirm_password)) {
+                    const hashed_pass = await bcrypt.hash(user_password, Number(process.env.SALT))
+                    await userModel.findByIdAndUpdate(req.user_record._id, { user_password: hashed_pass })
+                    resp.send({
+                        status: "1",
+                        message: `Password Successfully Updated`
+                    })
+
+                } else {
+                    resp.send({
+                        status: "0",
+                        message: `Password & Confirm Password must be same`
+                    })
+                }
+            } else {
+                resp.send({
+                    status: "0",
+                    message: `Password & Confirm Password Required`
+                })
+            }
+
+        } catch (error) {
+            resp.send({
+                status: "0",
+                message: `Change Password error ${error}`
+            })
+        }
+
+    }
+    static forgget_password = async (req, resp) => {
+        try {
+            const email = req.body.user_email
+            if (email.trim() != "") {
+                const record_exist = await userModel.findOne({
+                    user_email: email
+                });
+                resp.send(record_exist)
+            } else {
+                resp.send({
+                    status: "0",
+                    message: `Email required to change password`
+                })
+            }
+        } catch (error) {
+            resp.send({
+                status: "0",
+                message: `Change Password error ${error}`
+            })
         }
     }
 }
