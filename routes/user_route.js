@@ -12,6 +12,7 @@ user_route.use("/get_Login_user_data", verify_jwt_auth)
 user_route.post("/user_register", user_route_ctrl.user_register)
 user_route.post("/user_login", user_route_ctrl.user_login)
 user_route.post("/forgget_password", user_route_ctrl.forgget_password)
+user_route.post("/resetpassword/:id/:token", user_route_ctrl.resetpassword)
 
 // Privte API (need JWT Verification)\
 user_route.post("/change_password", user_route_ctrl.change_password)

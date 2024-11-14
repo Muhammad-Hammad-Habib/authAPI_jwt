@@ -3,6 +3,7 @@ dotenv.config()
 import userModel from "../models/user_data_mdl.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { verify_jwt_auth } from "../auth_middleware/auth_mdlwre_std.js";
 
 
 class user_route_ctrl {
@@ -124,14 +125,31 @@ class user_route_ctrl {
         }
 
     }
+
     static forgget_password = async (req, resp) => {
         try {
             const email = req.body.user_email
             if (email.trim() != "") {
                 const record_exist = await userModel.findOne({
                     user_email: email
-                });
-                resp.send(record_exist)
+                })
+                console.log(record_exist)
+                if (record_exist) {
+                    const secret = record_exist._id + process.env.JWT_SECRET_KEY;
+                    const token = jwt.sign({ userID: record_exist._id }, secret, { expiresIn: '10m' })
+
+                    resp.send({
+                        status: "1",
+                        link: `http://localhost:8000/user/api/resetpassword/${record_exist._id}/${token}`,
+                        message: `Click on to reset password`
+                    })
+                    // resp.send(token)
+                } else {
+                    resp.send({
+                        status: "0",
+                        message: `This email does not exist ${email}`
+                    })
+                }
             } else {
                 resp.send({
                     status: "0",
@@ -142,6 +160,40 @@ class user_route_ctrl {
             resp.send({
                 status: "0",
                 message: `Change Password error ${error}`
+            })
+        }
+    }
+
+    static resetpassword = async (req, resp) => {
+        try {
+            const { id, token } = req.params
+            if (id.trim() != "" && token.trim() != "") {
+                const record_exist = await userModel.findById(id)
+                if (record_exist) {
+                    const secret = id + process.env.JWT_SECRET_KEY
+                    console.log(token)
+                    const verify_token = jwt.verify(token, secret)
+                    console.log(verify_token)
+                    resp.send({
+                        status: "1",
+                        message: record_exist
+                    })
+                } else {
+                    resp.send({
+                        status: "0",
+                        message: `Invalid ID`
+                    })
+                }
+            } else {
+                resp.send({
+                    status: "0",
+                    message: `ID and Token required`
+                })
+            }
+        } catch (error) {
+            resp.send({
+                status: "0",
+                message: `Reset password Error ${error}`
             })
         }
     }
