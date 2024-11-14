@@ -171,13 +171,11 @@ class user_route_ctrl {
                 const record_exist = await userModel.findById(id)
                 if (record_exist) {
                     const secret = id + process.env.JWT_SECRET_KEY
-                    console.log(token)
                     const verify_token = jwt.verify(token, secret)
-                    console.log(verify_token)
-                    resp.send({
-                        status: "1",
-                        message: record_exist
-                    })
+
+                    console.log(record_exist)
+                    req.user_record = record_exist
+                    await this.change_password(req, resp)
                 } else {
                     resp.send({
                         status: "0",
