@@ -3,7 +3,7 @@ dotenv.config()
 import userModel from "../models/user_data_mdl.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import { verify_jwt_auth } from "../auth_middleware/auth_mdlwre_std.js";
+import email_transport from "../config/email_temp.js"
 
 
 class user_route_ctrl {
@@ -138,9 +138,16 @@ class user_route_ctrl {
                     const secret = record_exist._id + process.env.JWT_SECRET_KEY;
                     const token = jwt.sign({ userID: record_exist._id }, secret, { expiresIn: '10m' })
 
+                    const email = await email_transport.sendMail({
+                        from: `"Muhammad"<${process.env.EMAIL_FROM}>`,
+                        to: record_exist.user_email,
+                        subject: "Reset Password",
+                        html: `<a href="http://localhost:8000/user/api/resetpassword/${record_exist._id}/${token}">Click_here</a> to Reset you password with 15mnts`
+                    })
+                    console.log(email)
+
                     resp.send({
                         status: "1",
-                        link: `http://localhost:8000/user/api/resetpassword/${record_exist._id}/${token}`,
                         message: `Click on to reset password`
                     })
                     // resp.send(token)
@@ -153,13 +160,13 @@ class user_route_ctrl {
             } else {
                 resp.send({
                     status: "0",
-                    message: `Email required to change password`
+                    message: `Email required to reset password`
                 })
             }
         } catch (error) {
             resp.send({
                 status: "0",
-                message: `Change Password error ${error}`
+                message: `Reset Password error ${error}`
             })
         }
     }
